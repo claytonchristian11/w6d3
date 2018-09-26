@@ -1,0 +1,20 @@
+/* PHASE 11: Icons */
+.icon-small-wall {
+
+}
+
+.icon-small-about {
+
+}
+
+.icon-small-friends {
+
+}
+
+.icon-small-photos {
+
+}
+
+[class*="icon-"] {
+  background-image: url(../images/sprite.png);
+}
