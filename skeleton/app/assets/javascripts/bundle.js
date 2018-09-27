@@ -86,12 +86,46 @@
 /************************************************************************/
 /******/ ({
 
+/***/ "./frontend/api_util.js":
+/*!******************************!*\
+  !*** ./frontend/api_util.js ***!
+  \******************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+const APIUtil = {
+
+  followUser: id => (
+     $.ajax({
+      type: 'POST',
+      url: `/users/${id}/follow`,
+      dataType: 'json'
+    })
+  ),
+
+  unfollowUser: id => {
+    return $.ajax({
+      type: 'DELETE',
+      url: `/users/${id}/follow`,
+      dataType: 'json'
+    });
+  }
+
+};
+
+module.exports = APIUtil;
+
+
+/***/ }),
+
 /***/ "./frontend/follow_toggle.js":
 /*!***********************************!*\
   !*** ./frontend/follow_toggle.js ***!
   \***********************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
+
+const APIUtil = __webpack_require__(/*! ./api_util */ "./frontend/api_util.js");
 
 class FollowToggle {
   constructor(el) {
@@ -99,11 +133,16 @@ class FollowToggle {
     this.userId = this.$el.data("user-id");
     this.followState = this.$el.data("initial-follow-state");
     this.render();
-    this.handleClick();
+    this.$el.on('click', this.handleClick.bind(this));
   }
 
   render() {
-    console.log('rendered');
+    if (this.followState === 'following' || this.followState === 'unfollowing') {
+      this.$el.attr("disabled", true);
+    } else {
+      this.$el.attr("disabled", false);
+    }
+
     if (this.followState === 'unfollowed') {
       this.$el.text('Follow');
     } else {
@@ -111,9 +150,27 @@ class FollowToggle {
     }
   }
 
-  handleClick() {
-    preventDefault();
+  handleClick(event) {
+    console.log('event', event);
+    let that = this;
+    event.preventDefault();
 
+    if (this.followState === 'followed') {
+      this.followState = 'unfollowing';
+      this.render();
+      APIUtil.unfollowUser(this.userId).then(function() {
+        that.followState = 'unfollowed';
+        that.render();
+      });
+    } else if (this.followState === 'unfollowed') {
+      this.followState = 'following';
+      this.render();
+      APIUtil.followUser(this.userId).then(function() {
+        that.followState = 'followed';
+        that.render();
+      });
+
+    }
   }
 }
 
